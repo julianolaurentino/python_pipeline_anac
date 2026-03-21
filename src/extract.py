@@ -4,7 +4,7 @@ import glob
 import csv
 import os
 import pathlib
-
+bj
 # -- Constantes --
 
 INPUT_PATH = pathlib.Path('/home/obzen/Documentos/workspace/dataset/anac_combinada')
