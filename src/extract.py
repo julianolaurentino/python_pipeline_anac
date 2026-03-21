@@ -1,10 +1,9 @@
 import pandas as pd
 import polars as pl
 import glob
-import csv
 import os
 import pathlib
-bj
+
 # -- Constantes --
 
 INPUT_PATH = pathlib.Path('/home/obzen/Documentos/workspace/dataset/anac_combinada')
@@ -12,6 +11,7 @@ OUTPUT_PATH = pathlib.Path('/home/obzen/Documentos/workspace/dataset/anac_combin
 GLOB_PATH = str(INPUT_PATH / '*.txt')   
 TXT_FILES = glob.glob(GLOB_PATH)
 print(f"Arquivos encontrados: {TXT_FILES}")
+
 # Tentar diferentes encodings comuns em arquivos brasileiros
 ENCONDINGS = [# UTF-8 - Padrão moderno e mais comum
             'utf-8',
@@ -60,15 +60,17 @@ def ler_arquivos_txt(file_path):
     print(f"Não foi possível ler o arquivo '{file_path}' com nenhum dos encodings testados.")
     return None
 print("Iniciando a leitura dos arquivos TXT...")
-for file in TXT_FILES:
-    df = ler_arquivos_txt(file)
-    if df is not None:
-        # Gerar o nome do arquivo Parquet com base no nome do arquivo TXT
-        parquet_file_name = os.path.splitext(os.path.basename(file))[0] + '.parquet'
-        parquet_file_path = OUTPUT_PATH / parquet_file_name
-        # Salvar o DataFrame como Parquet usando Polars para melhor desempenho
-        pl.from_pandas(df).write_parquet(parquet_file_path)
-        print(f"Arquivo '{file}' convertido e salvo como '{parquet_file_path}'")
-    else:
-        print(f"Falha ao processar o arquivo '{file}'. Ele será ignorado.")
-print("Processamento concluído para todos os arquivos TXT.")
+
+def processar_arquivos_txt(txt_files):
+    for file in TXT_FILES:
+        df = ler_arquivos_txt(file)
+        if df is not None:
+            # Gerar o nome do arquivo Parquet com base no nome do arquivo TXT
+            parquet_file_name = os.path.splitext(os.path.basename(file))[0] + '.parquet'
+            parquet_file_path = OUTPUT_PATH / parquet_file_name
+            # Salvar o DataFrame como Parquet usando Polars para melhor desempenho
+            pl.from_pandas(df).write_parquet(parquet_file_path)
+            print(f"Arquivo '{file}' convertido e salvo como '{parquet_file_path}'")
+        else:
+            print(f"Falha ao processar o arquivo '{file}'. Ele será ignorado.")
+    print("Processamento concluído para todos os arquivos TXT.")
