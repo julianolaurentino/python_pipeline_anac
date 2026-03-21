@@ -8,6 +8,7 @@ import sqlalchemy
 INPUT_PATH = "/home/obzen/Documentos/workspace/dataset/anac_combinada/parquet"
 GLOB_PATH = os.path.join(INPUT_PATH, "*.parquet")
 PARQUET_FILES = glob.glob(GLOB_PATH)
+CONNECTION_STRING = "postgresql://username:password@localhost:5432/mydatabase"
 print(f"Arquivos parquet encontrados: {len(PARQUET_FILES)}")
 
 # -- Funções --
