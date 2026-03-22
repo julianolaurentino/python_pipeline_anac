@@ -5,7 +5,7 @@ import sqlalchemy
 
 # -- Constantes --
 
-INPUT_PATH = "/home/obzen/Documentos/workspace/dataset/anac_combinada/parquet"
+INPUT_PATH = ('/home/obzen/Documentos/workspace/dataset/anac_combinada')
 GLOB_PATH = os.path.join(INPUT_PATH, "*.parquet")
 PARQUET_FILES = glob.glob(GLOB_PATH)
 CONNECTION_STRING = "postgresql://username:password@localhost:5432/mydatabase"
