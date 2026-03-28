@@ -1,0 +1,14 @@
+# Leitura e manipulação de dados
+pandas==2.2.2
+polars==0.20.31
+pyarrow==16.1.0       # backend Parquet para pandas e polars
+
+# Banco de dados
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+
+# Detecção de encoding (extract.py)
+chardet==5.2.0
+
+# Variáveis de ambiente
+python-dotenv==1.0.1

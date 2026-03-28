@@ -1,32 +1,34 @@
+import glob
+import pathlib
+
+import chardet
 import pandas as pd
 import polars as pl
-import glob
-import os
-import pathlib
-import chardet
-
 
 # -- Constantes --
 
-INPUT_PATH  = pathlib.Path('/home/obzen/Documentos/workspace/dataset/anac_combinada')
-OUTPUT_PATH = pathlib.Path('/home/obzen/Documentos/workspace/python_pipeline_anac/data/raw')
-GLOB_PATH   = str(INPUT_PATH / '*.txt')
-TXT_FILES   = glob.glob(GLOB_PATH)
+INPUT_PATH = pathlib.Path("/home/obzen/Documentos/workspace/dataset/anac_combinada")
+OUTPUT_PATH = pathlib.Path(
+    "/home/obzen/Documentos/workspace/python_pipeline_anac/data/raw"
+)
+GLOB_PATH = str(INPUT_PATH / "*.txt")
+TXT_FILES = glob.glob(GLOB_PATH)
 
 # Encodings testados em ordem de prioridade (do mais comum ao menos comum)
 # Usado apenas como fallback se chardet não conseguir detectar com confiança
 ENCODINGS_FALLBACK = [
-    'utf-8',
-    'utf-8-sig',   # UTF-8 com BOM — comum em exports do Excel
-    'cp1252',      # Windows-1252 — padrão em sistemas Windows BR
-    'iso-8859-1',  # Latin-1 — arquivos legados
-    'cp860',       # MS-DOS Portuguese
-    'latin-1',
-    'utf-16',
+    "utf-8",
+    "utf-8-sig",  # UTF-8 com BOM — comum em exports do Excel
+    "cp1252",  # Windows-1252 — padrão em sistemas Windows BR
+    "iso-8859-1",  # Latin-1 — arquivos legados
+    "cp860",  # MS-DOS Portuguese
+    "latin-1",
+    "utf-16",
 ]
 
 
 # -- Funções --
+
 
 def detectar_encoding(file_path: pathlib.Path, amostra_bytes: int = 50_000) -> str:
     """
@@ -34,19 +36,19 @@ def detectar_encoding(file_path: pathlib.Path, amostra_bytes: int = 50_000) -> s
     Lê apenas os primeiros `amostra_bytes` bytes para ser eficiente em arquivos grandes.
     Retorna o encoding detectado ou 'utf-8' como padrão seguro.
     """
-    with open(file_path, 'rb') as f:
+    with open(file_path, "rb") as f:
         amostra = f.read(amostra_bytes)
 
     resultado = chardet.detect(amostra)
-    encoding  = resultado.get('encoding') or 'utf-8'
-    confianca = resultado.get('confidence', 0)
+    encoding = resultado.get("encoding") or "utf-8"
+    confianca = resultado.get("confidence", 0)
 
     print(f"  Encoding detectado: '{encoding}' (confiança: {confianca:.0%})")
 
     # Se confiança baixa, usa cp1252 como padrão seguro para arquivos BR
     if confianca < 0.7:
-        print(f"  Confiança baixa — usando 'cp1252' como fallback seguro")
-        return 'cp1252'
+        print("Confiança baixa — usando 'cp1252' como fallback seguro")
+        return "cp1252"
 
     return encoding
 
@@ -63,7 +65,9 @@ def ler_arquivo_txt(file_path: pathlib.Path) -> pd.DataFrame | None:
     # Tentativa 1: encoding detectado automaticamente
     encoding_detectado = detectar_encoding(file_path)
     try:
-        df = pd.read_csv(file_path, sep=';', encoding=encoding_detectado, low_memory=False)
+        df = pd.read_csv(
+            file_path, sep=";", encoding=encoding_detectado, low_memory=False
+        )
         print(f"  Lido com sucesso ({len(df):,} linhas, {len(df.columns)} colunas)")
         return df
     except UnicodeDecodeError:
@@ -74,8 +78,10 @@ def ler_arquivo_txt(file_path: pathlib.Path) -> pd.DataFrame | None:
         if encoding == encoding_detectado:
             continue  # já tentou
         try:
-            df = pd.read_csv(file_path, sep=';', encoding=encoding, low_memory=False)
-            print(f"  Lido com sucesso usando fallback '{encoding}' ({len(df):,} linhas)")
+            df = pd.read_csv(file_path, sep=";", encoding=encoding, low_memory=False)
+            print(
+                f"  Lido com sucesso usando fallback '{encoding}' ({len(df):,} linhas)"
+            )
             return df
         except UnicodeDecodeError:
             continue
@@ -84,9 +90,13 @@ def ler_arquivo_txt(file_path: pathlib.Path) -> pd.DataFrame | None:
             continue
 
     # Tentativa 3: último recurso — substitui caracteres inválidos
-    print(f"  Todos os encodings falharam — usando errors='replace' (pode haver caracteres corrompidos)")
+    print(
+        "Todos os encodings falharam — usando errors='replace' (pode haver caracteres corrompidos)"
+    )
     try:
-        df = pd.read_csv(file_path, sep=';', encoding='utf-8', errors='replace', low_memory=False)
+        df = pd.read_csv(
+            file_path, sep=";", encoding="utf-8", errors="replace", low_memory=False
+        )
         print(f"  Lido com substituição de caracteres ({len(df):,} linhas)")
         return df
     except Exception as e:
@@ -101,17 +111,17 @@ def processar_arquivos_txt(txt_files: list[str]) -> None:
     """
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
-    total     = len(txt_files)
-    sucessos  = 0
-    falhas    = []
+    total = len(txt_files)
+    sucessos = 0
+    falhas = []
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Iniciando processamento de {total} arquivo(s)...")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     for i, file in enumerate(txt_files, start=1):
         file_path = pathlib.Path(file)
-        print(f"\n[{i}/{total}]", end=' ')
+        print(f"\n[{i}/{total}]", end=" ")
 
         df = ler_arquivo_txt(file_path)
 
@@ -121,7 +131,7 @@ def processar_arquivos_txt(txt_files: list[str]) -> None:
             continue
 
         # Salvar como Parquet via Polars (mais eficiente que pandas.to_parquet)
-        parquet_name = file_path.stem + '.parquet'
+        parquet_name = file_path.stem + ".parquet"
         parquet_path = OUTPUT_PATH / parquet_name
 
         try:
@@ -133,20 +143,20 @@ def processar_arquivos_txt(txt_files: list[str]) -> None:
             falhas.append(file_path.name)
 
     # Resumo final
-    print(f"\n{'='*60}")
-    print(f"Processamento concluído.")
+    print(f"\n{'=' * 60}")
+    print("Processamento concluído.")
     print(f"  Sucessos : {sucessos}/{total}")
     print(f"  Falhas   : {len(falhas)}/{total}")
     if falhas:
-        print(f"  Arquivos com falha:")
+        print("Arquivos com falha:")
         for nome in falhas:
             print(f"    - {nome}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
 
 # -- Ponto de entrada --
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(f"Arquivos .txt encontrados: {len(TXT_FILES)}")
 
     if not TXT_FILES:
