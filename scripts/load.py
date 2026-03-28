@@ -158,6 +158,6 @@ if __name__ == "__main__":
     print(f"Arquivos .parquet encontrados: {len(PARQUET_FILES)}")
 
     if not PARQUET_FILES:
-        print(f"Nenhum arquivo .parquet em: {INPUT_PATH}")
+        print(f"Nenhum arquivo x.parquet em: {INPUT_PATH}")
     else:
         processar_carga(PARQUET_FILES)
